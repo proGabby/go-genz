@@ -1,6 +1,8 @@
 package user_repo_impl
 
 import (
+	"fmt"
+
 	postgressDatasource "github.com/proGabby/4genz/data/datasource"
 	"github.com/proGabby/4genz/domain/entity"
 )
@@ -16,6 +18,7 @@ func NewUserRepoImpl(psql postgressDatasource.PostgresDBStore) *UserRepositoryIm
 }
 
 func (userRepoImpl *UserRepositoryImpl) RegisterUser(name, email, profileImageUrl string, hashedPassword []byte) (*entity.User, error) {
+	fmt.Println("recorded")
 	return userRepoImpl.psql.RegisterUser(name, email, profileImageUrl, hashedPassword)
 }
 

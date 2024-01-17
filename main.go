@@ -39,5 +39,5 @@ func main() {
 	}
 
 	routes.SetUpUserRoutes(r, db)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), r))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/proGabby/4genz/data/dto"
 	"github.com/proGabby/4genz/domain/entity"
 	"github.com/proGabby/4genz/domain/usecase/user_usecase"
 	"github.com/proGabby/4genz/utils"
@@ -50,14 +51,22 @@ func (u *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	createdUser, err := u.userUsecases.RegisterUser.Execute(user.Name, user.Email, user.Password, user.ProfileImageUrl)
 
+	fmt.Printf("created user is %v\n", createdUser)
 	if err != nil {
+		fmt.Printf("error is %v", err)
 		utils.HandleError(map[string]interface{}{
 			"error": err,
 		}, http.StatusBadRequest, w)
+		return
 	}
 
-	createdUser.Password = ""
+	userDto := &dto.CreateUserResponse{
+		Name:            createdUser.Name,
+		Email:           createdUser.Email,
+		ProfileImageUrl: createdUser.ProfileImageUrl,
+		Id:              createdUser.Id,
+	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createdUser)
+	json.NewEncoder(w).Encode(userDto)
 }

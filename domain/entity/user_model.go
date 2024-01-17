@@ -4,7 +4,7 @@ type User struct {
 	Id                          int    `json:"id"`
 	Name                        string `json:"name" validate:"required,min=3,max=20"`
 	Email                       string `json:"email" validate:"required,email"`
-	Password                    string `json:"password" validate:"required: min6, max60"`
+	Password                    string `json:"password" validate:"required,min=6,max=60"`
 	ProfileImageUrl             string `json:"profile_image_url"`
 	IsVerified                  bool   `json:"is_verified"`
 	TokenVersion                int    `json:"token_version"`
