@@ -2,43 +2,16 @@ package postgressDbImpl
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
-	"os"
+
+	postgressDatasource "github.com/proGabby/4genz/data/datasource"
 )
 
 type PostgresDBImpl struct {
-	connStr string
+	psql postgressDatasource.PostgresDBStore
 }
 
-func (postgresDBImpl *PostgresDBImpl) InitDatabase() (*sql.DB, error) {
-
-	connString, ok := os.LookupEnv("DB_CONNECTION_STRING")
-
-	postgresDBImpl.connStr = connString
-
-	if !ok {
-		log.Println("DB_CONNECTION_STRING variable not set")
-	}
-	if postgresDBImpl.connStr == "" {
-		log.Fatal("DB_CONNECTION_STRING environment variable not set")
-	}
-
-	// Connect to the database
-	db, err := sql.Open("postgres", postgresDBImpl.connStr)
-	if err != nil {
-		fmt.Print(err)
-		return nil, err
-	}
-
-	err = db.Ping()
-
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("Connected to the database")
-
-	return db, nil
-
+func (p *PostgresDBImpl) InitDatabase() (*sql.DB, error) {
+	return p.InitDatabase()
 }
+
+

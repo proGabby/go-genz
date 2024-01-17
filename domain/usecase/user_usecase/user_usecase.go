@@ -1,7 +1,12 @@
 package user_usecase
 
-import "github.com/proGabby/4genz/domain/repository/user_repo"
+type UserUseCases struct {
+	RegisterUser RegisterUserUseCase
+}
 
-type UserUseCase struct {
-	UserRepository user_repo.UserRepository; 
+func NewUserCases(registerUserUsecase RegisterUserUseCase) *UserUseCases {
+
+	return &UserUseCases{
+		RegisterUser: registerUserUsecase,
+	}
 }
