@@ -10,18 +10,18 @@ type RegisterUserUseCase struct {
 	userRepo user_repo.UserRepository
 }
 
-func (u RegisterUserUseCase) Execute(name, email, password, profileImageUrl string) (*entity.User, error) {
+func (u RegisterUserUseCase) Execute(name, email, password string) (*entity.User, error) {
 
 	hashedPassword, er := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if er != nil {
 		return nil, er
 	}
 
-	return u.userRepo.RegisterUser(name, email, profileImageUrl, hashedPassword)
+	return u.userRepo.RegisterUser(name, email, hashedPassword)
 }
 
 func NewRegisterUserUseCase(userRepo user_repo.UserRepository) *RegisterUserUseCase {
-	
+
 	return &RegisterUserUseCase{
 		userRepo: userRepo,
 	}

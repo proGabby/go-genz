@@ -49,7 +49,7 @@ func (u *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser, err := u.userUsecases.RegisterUser.Execute(user.Name, user.Email, user.Password, user.ProfileImageUrl)
+	createdUser, err := u.userUsecases.RegisterUser.Execute(user.Name, user.Email, user.Password)
 
 	fmt.Printf("created user is %v\n", createdUser)
 	if err != nil {
