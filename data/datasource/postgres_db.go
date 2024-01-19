@@ -7,6 +7,7 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/proGabby/4genz/data/dto"
 	"github.com/proGabby/4genz/domain/entity"
 )
 
@@ -63,4 +64,17 @@ func (db *PostgresDBStore) RegisterUser(name, email, profileImageUrl string, has
 	createdUser := entity.NewUser(userID, name, email, profileImageUrl, false)
 
 	return createdUser, nil
+}
+
+func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (*dto.UserResponse, error) {
+
+	var userResDto dto.UserResponse
+	query := "UPDATE users SET profile_image_url = $2 WHERE id = $1 RETURNING id, name, email,profile_image_url"
+	err := db.DB.QueryRow(query, userId, profileImageUrl).Scan(&userResDto)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &userResDto, nil
 }

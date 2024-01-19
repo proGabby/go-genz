@@ -1,12 +1,14 @@
 package user_usecase
 
 type UserUseCases struct {
-	RegisterUser RegisterUserUseCase
+	RegisterUser  RegisterUserUseCase
+	UpdateProfile UpdateUserImageUsecase
 }
 
-func NewUserCases(registerUserUsecase RegisterUserUseCase) *UserUseCases {
+func NewUserCases(registerUserUsecase RegisterUserUseCase, updtProfUsecs UpdateUserImageUsecase) *UserUseCases {
 
 	return &UserUseCases{
-		RegisterUser: registerUserUsecase,
+		RegisterUser:  registerUserUsecase,
+		UpdateProfile: updtProfUsecs,
 	}
 }

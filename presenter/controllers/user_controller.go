@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/proGabby/4genz/data/dto"
@@ -60,7 +63,7 @@ func (u *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userDto := &dto.CreateUserResponse{
+	userDto := &dto.UserResponse{
 		Name:            createdUser.Name,
 		Email:           createdUser.Email,
 		ProfileImageUrl: createdUser.ProfileImageUrl,
@@ -69,4 +72,57 @@ func (u *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userDto)
+}
+
+func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*entity.User)
+
+	if !ok {
+		utils.HandleError(map[string]interface{}{
+			"error": "user not authenticated",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	err := r.ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("file parsing error: %v", err),
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	file, handler, err := r.FormFile("image")
+
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("no image key on the form file"),
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	defer file.Close()
+
+	savePath := filepath.Join("uploads", handler.Filename)
+
+	osfile, err := os.Create(savePath)
+
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": err,
+		}, http.StatusBadRequest, w)
+	}
+
+	now := time.Now()
+	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%s-image-%v", user.Name, now), osfile)
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": err,
+		}, http.StatusBadRequest, w)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userRes)
+
 }

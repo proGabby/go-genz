@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 
 	postgressDatasource "github.com/proGabby/4genz/data/datasource"
-	"github.com/proGabby/4genz/presenter/routes"
+	userRoutes "github.com/proGabby/4genz/presenter/routes"
 )
 
 func main() {
@@ -38,6 +38,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	routes.SetUpUserRoutes(r, db)
+	userRoutes.SetUpUserRoutes(r, db)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
