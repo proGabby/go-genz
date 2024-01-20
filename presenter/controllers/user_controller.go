@@ -74,6 +74,32 @@ func (u *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(userDto)
 }
 
+func (u *UserController) UserLogin(w http.ResponseWriter, r *http.Request) {
+	var user entity.User
+
+	// Decode the JSON request body into the User struct
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("Invalid request body %v", err),
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	resMap, err := u.userUsecases.LoginUser.Execute(user.Email, user.Password)
+
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("Invalid request body %v", err),
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resMap)
+
+}
+
 func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user").(*entity.User)
 
@@ -96,29 +122,41 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		utils.HandleError(map[string]interface{}{
-			"error": fmt.Sprintf("no image key on the form file"),
+			"error": err,
 		}, http.StatusBadRequest, w)
 		return
 	}
 
 	defer file.Close()
 
+	err = os.MkdirAll("uploads", os.ModePerm)
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": err,
+		}, http.StatusInternalServerError, w)
+		return
+	}
+
 	savePath := filepath.Join("uploads", handler.Filename)
 
 	osfile, err := os.Create(savePath)
 
 	if err != nil {
+		fmt.Printf("err os %v", err)
 		utils.HandleError(map[string]interface{}{
 			"error": err,
 		}, http.StatusBadRequest, w)
+		return
 	}
 
-	now := time.Now()
-	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%s-image-%v", user.Name, now), osfile)
+	now := time.Now().Unix()
+	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%v-image-%v", user.Email, now), osfile)
 	if err != nil {
+		fmt.Printf("err %v", err)
 		utils.HandleError(map[string]interface{}{
 			"error": err,
 		}, http.StatusBadRequest, w)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

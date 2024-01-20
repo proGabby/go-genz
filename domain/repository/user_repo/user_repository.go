@@ -11,5 +11,5 @@ type UserRepository interface {
 	UpdateProfileImage(userId int, profileImageUrl string) (*dto.UserResponse, error)
 	DeleteUser(userID int) error
 	GetUserByID(userID int) (*entity.User, error)
-	VerifyUserCredentials(username, password string) (*entity.User, error)
+	VerifyUserCredentials(email string) (*entity.User, error)
 }

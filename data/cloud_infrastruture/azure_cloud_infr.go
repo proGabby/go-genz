@@ -51,10 +51,11 @@ func (az *AzureCloudInfrasture) UploadImageToAzureStorage(fileName string, fileH
 		return nil, err
 	}
 
-	val, err := client.UploadFile(context.TODO(), az.containerName, "virtual/dir/path/"+fileName, fileHandler,
+	val, err := client.UploadFile(context.TODO(), az.containerName, fileName, fileHandler,
 		&azblob.UploadFileOptions{
 			BlockSize:   int64(1024),
 			Concurrency: uint16(3),
+
 			// If Progress is non-nil, this function is called periodically as bytes are uploaded.
 			Progress: func(bytesTransferred int64) {
 				fmt.Println(bytesTransferred)

@@ -27,12 +27,14 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 
 	registerUserUsecase := user_usecase.NewRegisterUserUseCase(userRepoImpl)
 	updateUserImage := user_usecase.NewUpdateUserImageUsecase(CloudStrImpl, userRepoImpl)
+	loginUserUsecase := user_usecase.NewLoginUserUsecase(userRepoImpl)
 
-	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage)
+	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase)
 	userController := controllers.NewUserController(*userUsecases)
 
 	authorizer := middlewares.NewAuthMiddleware(*userRepoImpl)
 
 	r.HandleFunc("/register", userController.RegisterUser).Methods("POST")
 	r.HandleFunc("/update/profile-img", authorizer.Authenticate(userController.UpadateUserImage)).Methods("POST")
+	r.HandleFunc("/login", userController.UserLogin).Methods("POST")
 }

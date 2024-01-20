@@ -78,3 +78,27 @@ func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (
 
 	return &userResDto, nil
 }
+
+func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, error) {
+
+	var userRes entity.User
+	query := "SELECT id, name, password, email, profile_image_url FROM users WHERE email = $1"
+	err := db.DB.QueryRow(query, email).Scan(&userRes.Id, &userRes.Name, &userRes.Password, &userRes.Email, &userRes.ProfileImageUrl)
+	if err != nil {
+		fmt.Print(err)
+		return nil, err
+	}
+
+	return &userRes, nil
+}
+
+func (db *PostgresDBStore) GetUserByID(userId int) (*entity.User, error) {
+	var user entity.User
+	query := "SELECT id, name, email, profile_image_url FROM users WHERE id = $1"
+	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

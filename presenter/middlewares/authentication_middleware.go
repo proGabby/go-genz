@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/proGabby/4genz/data/repo_impl/user_repo_impl.go"
@@ -35,6 +34,7 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		// Verify the token against the user store
 		user, err := m.verifyJWTToken(token)
 		if err != nil {
+			fmt.Printf("err verifying token is %v", err)
 			jsonResponse := map[string]interface{}{
 				"error": "Unauthorized",
 			}
@@ -49,37 +49,6 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		// Call the next handler with the updated context
 		next(w, r.WithContext(ctx))
 	}
-}
-
-func (m *AuthMiddleware) GenerateJWTToken(user *entity.User) (string, error) {
-
-	secrtKey, err := getJWTSecretKey()
-
-	if err != nil {
-		return "", err
-	}
-
-	// Define the expiration time for the token (e.g., 1 hour)
-	expirationTime := time.Now().Add(12 * time.Hour)
-
-	// Create the JWT claims
-	claims := &jwt.StandardClaims{
-		ExpiresAt: expirationTime.Unix(),
-		IssuedAt:  time.Now().Unix(),
-		Subject:   fmt.Sprintf("%d", user.Id),
-	}
-
-	// Create the JWT token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Sign the token with a secret key
-	secretKey := []byte(secrtKey) // Replace with a secure secret key
-	tokenString, err := token.SignedString(secretKey)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
 
 func getJWTSecretKey() (string, error) {

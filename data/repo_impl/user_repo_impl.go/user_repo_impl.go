@@ -34,9 +34,9 @@ func (userRepoImpl *UserRepositoryImpl) DeleteUser(userID int) error {
 }
 
 func (userRepoImpl *UserRepositoryImpl) GetUserByID(userID int) (*entity.User, error) {
-	panic("not implemted")
+	return userRepoImpl.psql.GetUserByID(userID)
 }
 
-func (userRepoImpl *UserRepositoryImpl) VerifyUserCredentials(username, password string) (*entity.User, error) {
-	panic("not implemted")
+func (userRepoImpl *UserRepositoryImpl) VerifyUserCredentials(email string) (*entity.User, error) {
+	return userRepoImpl.psql.VerifyUserCredentials(email)
 }
