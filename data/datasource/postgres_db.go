@@ -70,7 +70,7 @@ func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (
 
 	var userResDto dto.UserResponse
 	query := "UPDATE users SET profile_image_url = $2 WHERE id = $1 RETURNING id, name, email,profile_image_url"
-	err := db.DB.QueryRow(query, userId, profileImageUrl).Scan(&userResDto)
+	err := db.DB.QueryRow(query, userId, profileImageUrl).Scan(&userResDto.Id, &userResDto.Name, &userResDto.Email, &userResDto.ProfileImageUrl)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

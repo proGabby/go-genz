@@ -3,9 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -129,6 +131,17 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 
 	defer file.Close()
 
+	ok, extension := isAllowedImageFile(handler.Filename)
+
+	extensionName := strings.TrimPrefix(extension, ".")
+
+	if !ok {
+		utils.HandleError(map[string]interface{}{
+			"error": "uploaded file is not an allowed image format",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
 	err = os.MkdirAll("uploads", os.ModePerm)
 	if err != nil {
 		utils.HandleError(map[string]interface{}{
@@ -149,18 +162,41 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	now := time.Now().Unix()
-	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%v-image-%v", user.Email, now), osfile)
+	_, err = io.Copy(osfile, file)
 	if err != nil {
-		fmt.Printf("err %v", err)
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("file copying error: %v", err),
+		}, http.StatusInternalServerError, w)
+		return
+	}
+
+	now := time.Now().Unix()
+	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%v-image-%v%v", user.Email, now, extension), &extensionName, osfile)
+	if err != nil {
+		fmt.Printf("err n %v", err)
 		utils.HandleError(map[string]interface{}{
 			"error": err,
 		}, http.StatusBadRequest, w)
 		return
 	}
 
+	osfile.Close()
+
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userRes)
 
+}
+
+func isAllowedImageFile(filename string) (bool, string) {
+	allowedExtensions := map[string]bool{
+		".png":  true,
+		".jpg":  true,
+		".jpeg": true,
+		".gif":  true,
+		".webp": true,
+	}
+
+	ext := filepath.Ext(filename)
+	return allowedExtensions[strings.ToLower(ext)], ext
 }

@@ -21,9 +21,9 @@ func NewUpdateUserImageUsecase(cloudRepo cloudstorage.CloudStorageRepo, userRepo
 	}
 }
 
-func (c *UpdateUserImageUsecase) Execute(userId int, fileName string, fileHandler *os.File) (*dto.UserResponse, error) {
+func (c *UpdateUserImageUsecase) Execute(userId int, fileName string, fileExtensionName *string, fileHandler *os.File) (*dto.UserResponse, error) {
 
-	imageUrl, err := c.cloudRepo.UploadImageToCloudStorage(fileName, fileHandler)
+	imageUrl, err := c.cloudRepo.UploadImageToCloudStorage(fileName, fileExtensionName, fileHandler)
 
 	if err != nil {
 		return nil, err

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
 )
 
 type AzureCloudInfrasture struct {
 	accountName   string
 	containerName string
+	accessKey     string
 }
 
 func NewAzureCloudInfrasture() (*AzureCloudInfrasture, error) {
@@ -20,6 +21,12 @@ func NewAzureCloudInfrasture() (*AzureCloudInfrasture, error) {
 	if !ok {
 		fmt.Printf("AZure storage account name not found on env")
 		return nil, fmt.Errorf("AZure storage account name not found on env")
+	}
+
+	accessKey, ok := os.LookupEnv("AZURE_STORAGE_ACCESS_KEY")
+	if !ok {
+		fmt.Printf("Azure storage access key not found on env")
+		return nil, fmt.Errorf("Azure storage access key not found on env")
 	}
 
 	containerName, ok := os.LookupEnv("AZURE_STORAGE_CONTAINER_NAME")
@@ -32,37 +39,42 @@ func NewAzureCloudInfrasture() (*AzureCloudInfrasture, error) {
 	return &AzureCloudInfrasture{
 		accountName:   accountName,
 		containerName: containerName,
+		accessKey:     accessKey,
 	}, nil
 }
 
-func (az *AzureCloudInfrasture) UploadImageToAzureStorage(fileName string, fileHandler *os.File) (*string, error) {
+func (az *AzureCloudInfrasture) UploadImageToAzureStorage(fileName string, fileExtension *string, fileHandler *os.File) (*string, error) {
 
 	serviceURL := fmt.Sprintf("https://%s.blob.core.windows.net/", az.accountName)
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	cred, err := azblob.NewSharedKeyCredential(az.accountName, az.accessKey)
 
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := azblob.NewClient(serviceURL, cred, nil)
+	client, err := azblob.NewClientWithSharedKeyCredential(serviceURL, cred, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
+	contentType := fmt.Sprintf("image/%s", *fileExtension)
 	val, err := client.UploadFile(context.TODO(), az.containerName, fileName, fileHandler,
 		&azblob.UploadFileOptions{
 			BlockSize:   int64(1024),
 			Concurrency: uint16(3),
-
-			// If Progress is non-nil, this function is called periodically as bytes are uploaded.
+			//set http content type
+			HTTPHeaders: &blob.HTTPHeaders{
+				BlobContentType: &contentType,
+			},
 			Progress: func(bytesTransferred int64) {
 				fmt.Println(bytesTransferred)
 			},
 		})
 
 	if err != nil {
+		fmt.Printf("Error uploading file: %v\n", err)
 		return nil, err
 	}
 

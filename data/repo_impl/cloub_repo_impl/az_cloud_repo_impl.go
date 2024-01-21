@@ -17,6 +17,6 @@ func NewCloudReposityImpl(azcloudStrg infrastruture.AzureCloudInfrasture) *Cloud
 	}
 }
 
-func (az *CloudReposityImpl) UploadImageToCloudStorage(fileName string, fileHandler *os.File) (*string, error) {
-	return az.azcloudStrg.UploadImageToAzureStorage(fileName, fileHandler)
+func (az *CloudReposityImpl) UploadImageToCloudStorage(fileName string, fileExtensionName *string, fileHandler *os.File) (*string, error) {
+	return az.azcloudStrg.UploadImageToAzureStorage(fileName, fileExtensionName, fileHandler)
 }
