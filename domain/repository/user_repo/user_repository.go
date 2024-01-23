@@ -12,4 +12,7 @@ type UserRepository interface {
 	DeleteUser(userID int) error
 	GetUserByID(userID int) (*entity.User, error)
 	VerifyUserCredentials(email string) (*entity.User, error)
+	UpdateUserEmailPasscode(userId int, emailOtp string) (*dto.UserResponse, error)
+	FetchUserPasscode(userId int) (*entity.User, error)
+	UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error)
 }

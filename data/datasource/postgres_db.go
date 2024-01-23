@@ -102,3 +102,42 @@ func (db *PostgresDBStore) GetUserByID(userId int) (*entity.User, error) {
 
 	return &user, nil
 }
+
+func (db *PostgresDBStore) UpdateUserEmailPasscode(userId int, emailOtp string) (*dto.UserResponse, error) {
+
+	var userResDto dto.UserResponse
+	query := "UPDATE users SET email_otp = $2 WHERE id = $1 RETURNING id, name, email"
+	err := db.DB.QueryRow(query, userId, emailOtp).Scan(&userResDto.Id, &userResDto.Name, &userResDto.Email)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &userResDto, nil
+}
+
+func (db *PostgresDBStore) FetchPasscode(userId int) (*entity.User, error) {
+
+	var user entity.User
+	query := "SELECT id, name, email, email_otp, is_verified, profile_image_url FROM users WHERE id = $1"
+	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.EmailOtp, &user.IsVerified, &user.ProfileImageUrl)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (db *PostgresDBStore) UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error) {
+
+	var userResDto dto.UserResponse
+	query := "UPDATE users SET is_verified = $2 WHERE id = $1 RETURNING id, name, email, is_verified"
+	err := db.DB.QueryRow(query, userId, isVerified).Scan(&userResDto.Id, &userResDto.Name, &userResDto.Email, &userResDto.IsVerified)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &userResDto, nil
+}

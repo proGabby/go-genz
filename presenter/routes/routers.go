@@ -30,13 +30,14 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	if err != nil {
 		fmt.Printf("Email service error: %v", err)
 	}
-	sendEmailUsecase = user_usecase.NewSendAuthEmailUseCase(userRepoImpl, emailSendImpl)
 
 	registerUserUsecase := user_usecase.NewRegisterUserUseCase(userRepoImpl)
 	updateUserImage := user_usecase.NewUpdateUserImageUsecase(cloudStrImpl, userRepoImpl)
 	loginUserUsecase := user_usecase.NewLoginUserUsecase(userRepoImpl)
+	sendEmailUsecase = user_usecase.NewSendAuthEmailUseCase(userRepoImpl, emailSendImpl)
+	verifyPasscodeUsecase := user_usecase.NewVerifyPasscodeUseCase(userRepoImpl)
 
-	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase, sendEmailUsecase)
+	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase, sendEmailUsecase, *verifyPasscodeUsecase)
 	userController := controllers.NewUserController(*userUsecases)
 
 	authorizer := middlewares.NewAuthMiddleware(*userRepoImpl)
@@ -45,4 +46,5 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/update/profile-img", authorizer.Authenticate(userController.UpadateUserImage)).Methods("POST")
 	r.HandleFunc("/login", userController.UserLogin).Methods("POST")
 	r.HandleFunc("/send-auth-email", authorizer.Authenticate(userController.SendAuthEmail)).Methods("POST")
+	r.HandleFunc("/verify-passcode", authorizer.Authenticate(userController.VerifyPasscode)).Methods("POST")
 }

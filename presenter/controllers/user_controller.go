@@ -204,7 +204,7 @@ func isAllowedImageFile(filename string) (bool, string) {
 func (u *UserController) SendAuthEmail(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user").(*entity.User)
 
-	if !ok {
+	if user == nil || !ok {
 		utils.HandleError(map[string]interface{}{
 			"error": "user not authenticated",
 		}, http.StatusBadRequest, w)
@@ -222,7 +222,7 @@ func (u *UserController) SendAuthEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errr := u.userUsecases.SendAuthEmail.Execute("gaby12645@gmail.com", user.Email, "Verify Your Account", emailBody)
+	errr := u.userUsecases.SendAuthEmail.Execute(user.Id, "gaby12645@gmail.com", user.Email, "Verify Your Account", emailBody, passcode)
 
 	if errr != nil {
 		utils.HandleError(map[string]interface{}{
@@ -235,5 +235,44 @@ func (u *UserController) SendAuthEmail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"msg": "email sent successfully",
+	})
+}
+
+func (u *UserController) VerifyPasscode(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*entity.User)
+
+	if user == nil || !ok {
+		utils.HandleError(map[string]interface{}{
+			"error": "user not authenticated",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	var passcode struct {
+		Passcode string `json:"passcode"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&passcode)
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": "invalid request body",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	userRes, err := u.userUsecases.VerifyPasscode.Execute(user.Id, passcode.Passcode)
+
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("passcode verification error: %v", err),
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"msg":  "passcode verified successfully",
+		"data": *userRes,
 	})
 }

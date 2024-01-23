@@ -40,3 +40,15 @@ func (userRepoImpl *UserRepositoryImpl) GetUserByID(userID int) (*entity.User, e
 func (userRepoImpl *UserRepositoryImpl) VerifyUserCredentials(email string) (*entity.User, error) {
 	return userRepoImpl.psql.VerifyUserCredentials(email)
 }
+
+func (userRepoImpl *UserRepositoryImpl) UpdateUserEmailPasscode(userId int, emailOtp string) (*dto.UserResponse, error) {
+	return userRepoImpl.psql.UpdateUserEmailPasscode(userId, emailOtp)
+}
+
+func (userRepoImpl *UserRepositoryImpl) FetchUserPasscode(userId int) (*entity.User, error) {
+	return userRepoImpl.psql.FetchPasscode(userId)
+}
+
+func (userRepoImpl *UserRepositoryImpl) UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error) {
+	return userRepoImpl.psql.UpdateUserEmailVerificationStatus(userId, isVerified)
+}
