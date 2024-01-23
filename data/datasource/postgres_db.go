@@ -69,7 +69,7 @@ func (db *PostgresDBStore) RegisterUser(name, email, profileImageUrl string, has
 func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (*dto.UserResponse, error) {
 
 	var userResDto dto.UserResponse
-	query := "UPDATE users SET profile_image_url = $2 WHERE id = $1 RETURNING id, name, email,profile_image_url"
+	query := "UPDATE users SET profile_image_url = $2 WHERE id = $1 RETURNING id, name, email,profile_image_url, is_verified"
 	err := db.DB.QueryRow(query, userId, profileImageUrl).Scan(&userResDto.Id, &userResDto.Name, &userResDto.Email, &userResDto.ProfileImageUrl)
 	if err != nil {
 		fmt.Println(err)
@@ -82,8 +82,8 @@ func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (
 func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, error) {
 
 	var userRes entity.User
-	query := "SELECT id, name, password, email, profile_image_url FROM users WHERE email = $1"
-	err := db.DB.QueryRow(query, email).Scan(&userRes.Id, &userRes.Name, &userRes.Password, &userRes.Email, &userRes.ProfileImageUrl)
+	query := "SELECT id, name, password, email, profile_image_url, is_verified FROM users WHERE email = $1"
+	err := db.DB.QueryRow(query, email).Scan(&userRes.Id, &userRes.Name, &userRes.Password, &userRes.Email, &userRes.ProfileImageUrl, &userRes.IsVerified)
 	if err != nil {
 		fmt.Print(err)
 		return nil, err
@@ -94,8 +94,8 @@ func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, er
 
 func (db *PostgresDBStore) GetUserByID(userId int) (*entity.User, error) {
 	var user entity.User
-	query := "SELECT id, name, email, profile_image_url FROM users WHERE id = $1"
-	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl)
+	query := "SELECT id, name, email, profile_image_url, is_verified FROM users WHERE id = $1"
+	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl, &user.IsVerified)
 	if err != nil {
 		return nil, err
 	}

@@ -200,3 +200,40 @@ func isAllowedImageFile(filename string) (bool, string) {
 	ext := filepath.Ext(filename)
 	return allowedExtensions[strings.ToLower(ext)], ext
 }
+
+func (u *UserController) SendAuthEmail(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*entity.User)
+
+	if !ok {
+		utils.HandleError(map[string]interface{}{
+			"error": "user not authenticated",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	passcode, err := utils.GeneratePasscode(6)
+
+	emailBody := fmt.Sprintf("<p>Dear User,</p><p>Your passcode is: <strong>%s</strong></p><p>Use this passcode to complete your action. Please do not share it with others.</p>", passcode)
+
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": "user not authenticated",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	errr := u.userUsecases.SendAuthEmail.Execute("gaby12645@gmail.com", user.Email, "Verify Your Account", emailBody)
+
+	if errr != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": "passcode sending error",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"msg": "email sent successfully",
+	})
+}

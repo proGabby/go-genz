@@ -2,6 +2,7 @@ package userRoutes
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/gorilla/mux"
 
@@ -23,13 +24,19 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	}
 
 	userRepoImpl := user_repo_impl.NewUserRepoImpl(*psql)
-	CloudStrImpl := cloud_repo_impl.NewCloudReposityImpl(*azCloud)
+	cloudStrImpl := cloud_repo_impl.NewCloudReposityImpl(*azCloud)
+	emailSendImpl, err := infrastruture.NewGomailSender("smtp.gmail.com")
+	var sendEmailUsecase *user_usecase.SendAuthEmailUseCase
+	if err != nil {
+		fmt.Printf("Email service error: %v", err)
+	}
+	sendEmailUsecase = user_usecase.NewSendAuthEmailUseCase(userRepoImpl, emailSendImpl)
 
 	registerUserUsecase := user_usecase.NewRegisterUserUseCase(userRepoImpl)
-	updateUserImage := user_usecase.NewUpdateUserImageUsecase(CloudStrImpl, userRepoImpl)
+	updateUserImage := user_usecase.NewUpdateUserImageUsecase(cloudStrImpl, userRepoImpl)
 	loginUserUsecase := user_usecase.NewLoginUserUsecase(userRepoImpl)
 
-	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase)
+	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase, sendEmailUsecase)
 	userController := controllers.NewUserController(*userUsecases)
 
 	authorizer := middlewares.NewAuthMiddleware(*userRepoImpl)
@@ -37,4 +44,5 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/register", userController.RegisterUser).Methods("POST")
 	r.HandleFunc("/update/profile-img", authorizer.Authenticate(userController.UpadateUserImage)).Methods("POST")
 	r.HandleFunc("/login", userController.UserLogin).Methods("POST")
+	r.HandleFunc("/send-auth-email", authorizer.Authenticate(userController.SendAuthEmail)).Methods("POST")
 }
