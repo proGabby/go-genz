@@ -81,14 +81,20 @@ func (m *AuthMiddleware) verifyJWTToken(tokenString string) (*entity.User, error
 		return nil, errors.New("invalid token")
 	}
 
-	userID, err := strconv.Atoi(claims.Subject)
+	userID, err := strconv.Atoi(claims.Id)
 	if err != nil {
 		return nil, err
 	}
 
+	tokenVersion, err := strconv.Atoi(claims.Subject)
+
 	user, err := m.userRepo.GetUserByID(userID)
 	if err != nil {
 		return nil, err
+	}
+
+	if user.TokenVersion != tokenVersion {
+		return nil, fmt.Errorf("user token is invalid")
 	}
 
 	return user, nil

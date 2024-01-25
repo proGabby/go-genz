@@ -35,6 +35,7 @@ func main() {
 	db, err := postgressDatasource.InitDatabase()
 
 	if err != nil {
+		fmt.Println("Error connecting to the database")
 		log.Fatal(err)
 	}
 

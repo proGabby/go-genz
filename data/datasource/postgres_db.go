@@ -82,8 +82,8 @@ func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (
 func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, error) {
 
 	var userRes entity.User
-	query := "SELECT id, name, password, email, profile_image_url, is_verified FROM users WHERE email = $1"
-	err := db.DB.QueryRow(query, email).Scan(&userRes.Id, &userRes.Name, &userRes.Password, &userRes.Email, &userRes.ProfileImageUrl, &userRes.IsVerified)
+	query := "SELECT id, name, password, email, profile_image_url, is_verified, token_version FROM users WHERE email = $1"
+	err := db.DB.QueryRow(query, email).Scan(&userRes.Id, &userRes.Name, &userRes.Password, &userRes.Email, &userRes.ProfileImageUrl, &userRes.IsVerified, &userRes.TokenVersion)
 	if err != nil {
 		fmt.Print(err)
 		return nil, err
@@ -94,8 +94,8 @@ func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, er
 
 func (db *PostgresDBStore) GetUserByID(userId int) (*entity.User, error) {
 	var user entity.User
-	query := "SELECT id, name, email, profile_image_url, is_verified FROM users WHERE id = $1"
-	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl, &user.IsVerified)
+	query := "SELECT id, name, email, profile_image_url, is_verified, token_version FROM users WHERE id = $1"
+	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl, &user.IsVerified, &user.TokenVersion)
 	if err != nil {
 		return nil, err
 	}

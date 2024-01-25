@@ -30,13 +30,17 @@ func (u *LoginUserUsecase) Execute(email, password string) (map[string]interface
 		return nil, err
 	}
 
+	if user == nil {
+		return nil, fmt.Errorf("User not available")
+	}
+
 	error := u.compareHashedPassword(user.Password, password)
 
 	if error != nil {
 		return nil, error
 	}
 
-	token, err := u.generateJWTToken(user.Id)
+	token, err := u.generateJWTToken(user.Id, user.TokenVersion)
 
 	if error != nil {
 		return nil, error
@@ -66,7 +70,7 @@ func (u *LoginUserUsecase) compareHashedPassword(hashedPassword, password string
 	return nil
 }
 
-func (u *LoginUserUsecase) generateJWTToken(userId int) (string, error) {
+func (u *LoginUserUsecase) generateJWTToken(userId int, tokenVersion int) (string, error) {
 
 	secrtKey, err := getJWTSecretKey()
 
@@ -81,7 +85,8 @@ func (u *LoginUserUsecase) generateJWTToken(userId int) (string, error) {
 	claims := &jwt.StandardClaims{
 		ExpiresAt: expirationTime.Unix(),
 		IssuedAt:  time.Now().Unix(),
-		Subject:   fmt.Sprintf("%d", userId),
+		Id:        fmt.Sprintf("%d", userId),
+		Subject:   fmt.Sprintf("%d", tokenVersion),
 	}
 
 	// Create the JWT token
