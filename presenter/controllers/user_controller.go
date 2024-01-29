@@ -3,6 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"io"
 	"net/http"
 	"os"
@@ -162,6 +164,8 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	defer osfile.Close()
+
 	_, err = io.Copy(osfile, file)
 	if err != nil {
 		utils.HandleError(map[string]interface{}{
@@ -170,8 +174,13 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	_, err = osfile.Seek(0, 0)
+	if err != nil {
+		log.Fatal("Error seeking file:", err)
+	}
+
 	now := time.Now().Unix()
-	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%v-image-%v%v", user.Email, now, extension), &extensionName, osfile)
+	userRes, err := u.userUsecases.UpdateProfile.Execute(user.Id, fmt.Sprintf("%v-image-%v%v", strings.ReplaceAll(user.Name, " ", ""), now, extension), &extensionName, osfile)
 	if err != nil {
 		fmt.Printf("err n %v", err)
 		utils.HandleError(map[string]interface{}{
@@ -179,8 +188,6 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 		}, http.StatusBadRequest, w)
 		return
 	}
-
-	osfile.Close()
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")

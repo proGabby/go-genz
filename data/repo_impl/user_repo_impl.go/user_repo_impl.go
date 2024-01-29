@@ -18,7 +18,7 @@ func NewUserRepoImpl(psql postgressDatasource.PostgresDBStore) *UserRepositoryIm
 
 func (userRepoImpl *UserRepositoryImpl) RegisterUser(name, email string, hashedPassword []byte) (*entity.User, error) {
 
-	return userRepoImpl.psql.RegisterUser(name, email, "https://genzstorage.blob.core.windows.net/genzblob/user_person_human_avatar-128.webp", hashedPassword)
+	return userRepoImpl.psql.RegisterUser(name, email, "https://genz-blob.s3.amazonaws.com/img/user_person_human_avatar-128.webp", hashedPassword)
 }
 
 func (userRepoImpl *UserRepositoryImpl) UpdateUser(userID int, username, password, profileImageUrl string) (*entity.User, error) {

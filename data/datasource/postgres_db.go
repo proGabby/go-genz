@@ -54,10 +54,10 @@ func InitDatabase() (*sql.DB, error) {
 func (db *PostgresDBStore) RegisterUser(name, email, profileImageUrl string, hashedPassword []byte) (*entity.User, error) {
 
 	var userID int
-	query := "INSERT INTO users(name, email, profile_image_url, password, is_verified, token_version,email_otp,forgot_password_otp,forget_password_otp_expiry_time ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
+	query := "INSERT INTO users(name, email, profile_image_url, password, is_verified, token_version,email_otp,forgot_password_otp,forget_password_otp_expiry_time) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
 	err := db.DB.QueryRow(query, name, email, profileImageUrl, hashedPassword, false, 0, "", "", 0).Scan(&userID)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("error creating user: %v\n", err)
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (
 
 	var userResDto dto.UserResponse
 	query := "UPDATE users SET profile_image_url = $2 WHERE id = $1 RETURNING id, name, email,profile_image_url, is_verified"
-	err := db.DB.QueryRow(query, userId, profileImageUrl).Scan(&userResDto.Id, &userResDto.Name, &userResDto.Email, &userResDto.ProfileImageUrl)
+	err := db.DB.QueryRow(query, userId, profileImageUrl).Scan(&userResDto.Id, &userResDto.Name, &userResDto.Email, &userResDto.ProfileImageUrl, &userResDto.IsVerified)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

@@ -18,13 +18,20 @@ import (
 func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 
 	psql := postgressDatasource.NewPostgresDBStore(db)
-	azCloud, err := infrastruture.NewAzureCloudInfrasture()
+	// azCloud, err := infrastruture.NewAzureCloudInfrasture()
+	// if err != nil {
+	// 	return
+	// }
+
+	awsStorage, err := infrastruture.NewS3Handler()
 	if err != nil {
+		fmt.Printf("AWS storage error: %v", err)
 		return
 	}
 
 	userRepoImpl := user_repo_impl.NewUserRepoImpl(*psql)
-	cloudStrImpl := cloud_repo_impl.NewCloudReposityImpl(*azCloud)
+	// cloudStrImpl := cloud_repo_impl.NewCloudReposityImpl(*azCloud)
+	cloudStrImpl := cloud_repo_impl.NewAWSCloudReposityImpl(*awsStorage)
 	emailSendImpl, err := infrastruture.NewGomailSender("smtp.gmail.com")
 	var sendEmailUsecase *user_usecase.SendAuthEmailUseCase
 	if err != nil {
