@@ -1,6 +1,6 @@
 module github.com/proGabby/4genz
 
-go 1.21.5
+go 1.21.4
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
