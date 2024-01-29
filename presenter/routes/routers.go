@@ -43,8 +43,9 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	loginUserUsecase := user_usecase.NewLoginUserUsecase(userRepoImpl)
 	sendEmailUsecase = user_usecase.NewSendAuthEmailUseCase(userRepoImpl, emailSendImpl)
 	verifyPasscodeUsecase := user_usecase.NewVerifyPasscodeUseCase(userRepoImpl)
+	logoutUser := user_usecase.NewLogoutUserUseCase(userRepoImpl)
 
-	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase, sendEmailUsecase, *verifyPasscodeUsecase)
+	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase, sendEmailUsecase, *verifyPasscodeUsecase, *logoutUser)
 	userController := controllers.NewUserController(*userUsecases)
 
 	authorizer := middlewares.NewAuthMiddleware(*userRepoImpl)
@@ -54,4 +55,5 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/login", userController.UserLogin).Methods("POST")
 	r.HandleFunc("/send-auth-email", authorizer.Authenticate(userController.SendAuthEmail)).Methods("POST")
 	r.HandleFunc("/verify-passcode", authorizer.Authenticate(userController.VerifyPasscode)).Methods("POST")
+	r.HandleFunc("/logout", authorizer.Authenticate(userController.LogoutUser)).Methods("DELETE")
 }

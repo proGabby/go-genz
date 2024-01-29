@@ -52,3 +52,8 @@ func (userRepoImpl *UserRepositoryImpl) FetchUserPasscode(userId int) (*entity.U
 func (userRepoImpl *UserRepositoryImpl) UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error) {
 	return userRepoImpl.psql.UpdateUserEmailVerificationStatus(userId, isVerified)
 }
+
+func (userRepoImpl *UserRepositoryImpl) UpdateUserTokenVersion(userId int) error {
+	_, err := userRepoImpl.psql.UpdateUserTokenVersion(userId)
+	return err
+}

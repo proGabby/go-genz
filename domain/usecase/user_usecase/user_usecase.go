@@ -6,9 +6,10 @@ type UserUseCases struct {
 	LoginUser      LoginUserUsecase
 	SendAuthEmail  *SendAuthEmailUseCase
 	VerifyPasscode VerifyPasscodeUseCase
+	LogoutUser     LogoutUserUseCase
 }
 
-func NewUserCases(registerUserUsecase RegisterUserUseCase, updtProfUsecs UpdateUserImageUsecase, loginUser LoginUserUsecase, sendEmail *SendAuthEmailUseCase, verifyPass VerifyPasscodeUseCase) *UserUseCases {
+func NewUserCases(registerUserUsecase RegisterUserUseCase, updtProfUsecs UpdateUserImageUsecase, loginUser LoginUserUsecase, sendEmail *SendAuthEmailUseCase, verifyPass VerifyPasscodeUseCase, logout LogoutUserUseCase) *UserUseCases {
 
 	return &UserUseCases{
 		RegisterUser:   registerUserUsecase,
@@ -16,5 +17,6 @@ func NewUserCases(registerUserUsecase RegisterUserUseCase, updtProfUsecs UpdateU
 		LoginUser:      loginUser,
 		SendAuthEmail:  sendEmail,
 		VerifyPasscode: verifyPass,
+		LogoutUser:     logout,
 	}
 }

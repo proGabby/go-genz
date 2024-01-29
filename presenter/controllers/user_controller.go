@@ -283,3 +283,31 @@ func (u *UserController) VerifyPasscode(w http.ResponseWriter, r *http.Request) 
 		"data": *userRes,
 	})
 }
+
+// method that logout user by calling the logout usecase
+func (u *UserController) LogoutUser(w http.ResponseWriter, r *http.Request) {
+
+	user, ok := r.Context().Value("user").(*entity.User)
+
+	if user == nil || !ok {
+		utils.HandleError(map[string]interface{}{
+			"error": "user not authenticated",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	err := u.userUsecases.LogoutUser.Execute(user.Id)
+
+	if err != nil {
+		utils.HandleError(map[string]interface{}{
+			"error": fmt.Sprintf("logout error: %v", err),
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"msg": "logout successfully",
+	})
+}

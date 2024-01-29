@@ -15,4 +15,5 @@ type UserRepository interface {
 	UpdateUserEmailPasscode(userId int, emailOtp string) (*dto.UserResponse, error)
 	FetchUserPasscode(userId int) (*entity.User, error)
 	UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error)
+	UpdateUserTokenVersion(userId int) error
 }

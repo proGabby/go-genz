@@ -141,3 +141,17 @@ func (db *PostgresDBStore) UpdateUserEmailVerificationStatus(userId int, isVerif
 
 	return &userResDto, nil
 }
+
+// A method to update user token version by one
+func (db *PostgresDBStore) UpdateUserTokenVersion(userId int) (*entity.User, error) {
+
+	var user entity.User
+	query := "UPDATE users SET token_version = token_version + 1 WHERE id = $1 RETURNING id, name, email, profile_image_url, is_verified"
+	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl, &user.IsVerified)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
+}
