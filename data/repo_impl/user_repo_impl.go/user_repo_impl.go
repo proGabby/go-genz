@@ -57,3 +57,7 @@ func (userRepoImpl *UserRepositoryImpl) UpdateUserTokenVersion(userId int) error
 	_, err := userRepoImpl.psql.UpdateUserTokenVersion(userId)
 	return err
 }
+
+func (userRepoImpl *UserRepositoryImpl) CheckIfUserExists(email string) (bool, error) {
+	return userRepoImpl.psql.CheckIfUserExists(email)
+}

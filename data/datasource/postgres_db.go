@@ -155,3 +155,21 @@ func (db *PostgresDBStore) UpdateUserTokenVersion(userId int) (*entity.User, err
 
 	return &user, nil
 }
+
+
+// A method to check if user already exists
+func (db *PostgresDBStore) CheckIfUserExists(email string) (bool, error) {
+
+	var user entity.User
+	query := "SELECT id FROM users WHERE email = $1"
+	err := db.DB.QueryRow(query, email).Scan(&user.Id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		fmt.Println(err)
+		return false, err
+	}
+
+	return true, nil
+}

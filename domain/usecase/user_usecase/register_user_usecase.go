@@ -1,6 +1,8 @@
 package user_usecase
 
 import (
+	"fmt"
+
 	"github.com/proGabby/4genz/domain/entity"
 	"github.com/proGabby/4genz/domain/repository/user_repo"
 	"golang.org/x/crypto/bcrypt"
@@ -11,6 +13,16 @@ type RegisterUserUseCase struct {
 }
 
 func (u *RegisterUserUseCase) Execute(name, email, password string) (*entity.User, error) {
+
+	isExist, err := u.userRepo.CheckIfUserExists(email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if isExist {
+		return nil, fmt.Errorf("User already exists")
+	}
 
 	hashedPassword, er := u.hashedPassword(password)
 	if er != nil {

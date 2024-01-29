@@ -58,11 +58,10 @@ func (u *UserController) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	createdUser, err := u.userUsecases.RegisterUser.Execute(user.Name, user.Email, user.Password)
 
-	fmt.Printf("created user is %v\n", createdUser)
 	if err != nil {
 		fmt.Printf("error is %v", err)
 		utils.HandleError(map[string]interface{}{
-			"error": err,
+			"error": err.Error(),
 		}, http.StatusBadRequest, w)
 		return
 	}
@@ -126,7 +125,7 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		utils.HandleError(map[string]interface{}{
-			"error": err,
+			"error": err.Error(),
 		}, http.StatusBadRequest, w)
 		return
 	}
@@ -147,7 +146,7 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 	err = os.MkdirAll("uploads", os.ModePerm)
 	if err != nil {
 		utils.HandleError(map[string]interface{}{
-			"error": err,
+			"error": err.Error(),
 		}, http.StatusInternalServerError, w)
 		return
 	}
@@ -159,7 +158,7 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		fmt.Printf("err os %v", err)
 		utils.HandleError(map[string]interface{}{
-			"error": err,
+			"error": err.Error(),
 		}, http.StatusBadRequest, w)
 		return
 	}
@@ -184,7 +183,7 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		fmt.Printf("err n %v", err)
 		utils.HandleError(map[string]interface{}{
-			"error": err,
+			"error": err.Error(),
 		}, http.StatusBadRequest, w)
 		return
 	}
