@@ -7,11 +7,9 @@ import (
 )
 
 type PostgresDBImpl struct {
-	psql postgressDatasource.PostgresDBStore
+	psql postgressDatasource.PostgresUserDBStore
 }
 
 func (p *PostgresDBImpl) InitDatabase() (*sql.DB, error) {
 	return p.InitDatabase()
 }
-
-

@@ -7,10 +7,10 @@ import (
 )
 
 type UserRepositoryImpl struct {
-	psql postgressDatasource.PostgresDBStore
+	psql postgressDatasource.PostgresUserDBStore
 }
 
-func NewUserRepoImpl(psql postgressDatasource.PostgresDBStore) *UserRepositoryImpl {
+func NewUserRepoImpl(psql postgressDatasource.PostgresUserDBStore) *UserRepositoryImpl {
 	return &UserRepositoryImpl{
 		psql: psql,
 	}

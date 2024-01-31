@@ -17,7 +17,7 @@ import (
 
 func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 
-	psql := postgressDatasource.NewPostgresDBStore(db)
+	psql := postgressDatasource.NewPostgresUserDBStore(db)
 	// azCloud, err := infrastruture.NewAzureCloudInfrasture()
 	// if err != nil {
 	// 	return
