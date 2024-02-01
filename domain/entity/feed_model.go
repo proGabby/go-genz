@@ -6,7 +6,7 @@ import "time"
 type Feed struct {
 	Id        int      `json:"id"`
 	Caption   string   `json:"caption" validate:"required,min=3,max=120"`
-	UserId    int      `json:"user_id" validate:"required"`
+	UserId    int      `json:"user_id"`
 	Images    []string `json:"images"`
 	CreatedAt string   `json:"created_at"`
 	UpdatedAt string   `json:"updated_at"`
