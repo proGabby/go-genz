@@ -52,9 +52,10 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 
 	//feedsUsecases
 	postFeedusecase := feeds_usecase.NewCreateFieldUsecase(feedRepoImpl, cloudStrImpl)
+	fetchFeedsUsecase := feeds_usecase.NewFetchFeedsUsecase(feedRepoImpl)
 
 	userUsecases := user_usecase.NewUserCases(*registerUserUsecase, *updateUserImage, *loginUserUsecase, sendEmailUsecase, *verifyPasscodeUsecase, *logoutUser)
-	feedsUsecases := feeds_usecase.NewFeedUsecases(*postFeedusecase)
+	feedsUsecases := feeds_usecase.NewFeedUsecases(*postFeedusecase, *fetchFeedsUsecase)
 
 	//controllers objects
 	userController := controllers.NewUserController(*userUsecases)
@@ -70,4 +71,5 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/logout", authorizer.Authenticate(userController.LogoutUser)).Methods("DELETE")
 
 	r.HandleFunc("/feed", authorizer.Authenticate(feedController.CreateFeed)).Methods("POST")
+	r.HandleFunc("/feeds", authorizer.Authenticate(feedController.FetchFeeds)).Methods("GET")
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/proGabby/4genz/domain/entity"
@@ -20,8 +21,6 @@ func NewFeedsController(feedUsecases feeds_usecase.FeedUsecases) *FeedsControlle
 		feedUsecases: feedUsecases,
 	}
 }
-
-//var validate = validator.New()
 
 func (f *FeedsController) CreateFeed(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user").(*entity.User)
@@ -88,5 +87,43 @@ func (f *FeedsController) CreateFeed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(*feed)
+
+}
+
+func (f *FeedsController) FetchFeeds(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*entity.User)
+
+	if user == nil || !ok {
+		utils.HandleError(map[string]interface{}{
+			"error": "user not authenticated",
+		}, http.StatusBadRequest, w)
+		return
+	}
+	var limit int = 10
+	var page int = 1
+	limt, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err == nil {
+		limit = limt
+	}
+
+	pg, err := strconv.Atoi(r.URL.Query().Get("page"))
+
+	if err == nil {
+		page = pg
+	}
+
+	feedRes, err := f.feedUsecases.FetchFeed.Execute(limit, page)
+
+	if err != nil || feedRes == nil {
+		fmt.Printf("error fetching feeds: %v \n", err)
+		utils.HandleError(map[string]interface{}{
+			"error": "something went wrong fetching feeds",
+		}, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(*feedRes)
 
 }

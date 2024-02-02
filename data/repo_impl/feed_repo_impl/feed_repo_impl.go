@@ -2,6 +2,7 @@ package feed_repo_impl
 
 import (
 	postgressDatasource "github.com/proGabby/4genz/data/datasource"
+	"github.com/proGabby/4genz/data/dto"
 	"github.com/proGabby/4genz/domain/entity"
 )
 
@@ -21,4 +22,8 @@ func (feedRepoImpl *FeedRepositoryImpl) CreateNewFeed(userId int, caption string
 
 func (feedRepoImpl *FeedRepositoryImpl) AddFeedImage(feed *entity.Feed, imageUrl string) (*entity.Feed, error) {
 	return feedRepoImpl.psql.AddFeedImage(feed, imageUrl)
+}
+
+func (feedRepoImpl *FeedRepositoryImpl) FetchPaginatedFeeds(limit, page int) (*[]dto.FeedWithUserData, *int, error) {
+	return feedRepoImpl.psql.FetchFeedWithPagination(limit, page)
 }

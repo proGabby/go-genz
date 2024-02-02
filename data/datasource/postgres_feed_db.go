@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
+	"github.com/proGabby/4genz/data/dto"
 	"github.com/proGabby/4genz/domain/entity"
 )
 
@@ -51,12 +52,16 @@ func (feedDb *PostgresFeedDBStore) AddFeedImage(feed *entity.Feed, image string)
 
 }
 
-func (feedDb *PostgresFeedDBStore) FetchFeedWithPagination(limit, page int) (*[]entity.Feed, error) {
+func (feedDb *PostgresFeedDBStore) FetchFeedWithPagination(limit, offset int) (*[]dto.FeedWithUserData, *int, error) {
 
-	//calculate limit and offset
-	offset := limit * page
+	feeds := []dto.FeedWithUserData{}
+	feedMap := make(map[int]*dto.FeedWithUserData)
 
-	feeds := []entity.Feed{}
+	var totalUniqueFeedId int
+	err := feedDb.DB.QueryRow("SELECT COUNT(DISTINCT Id) FROM Feeds").Scan(&totalUniqueFeedId)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	query := fmt.Sprintf(`
 						SELECT
@@ -66,12 +71,10 @@ func (feedDb *PostgresFeedDBStore) FetchFeedWithPagination(limit, page int) (*[]
 							f.Likes,
 							f.CreatedAt AS FeedCreatedAt,
 							f.UpdatedAt AS FeedUpdatedAt,
-							fi.Id AS ImageId,
 							fi.ImageUrl,
-							u.Id AS UserId,
 							u.Name AS UserName,
 							u.Email AS UserEmail,
-							u.ProfileImageUrl AS UserProfileImageUrl
+							u.profile_image_url AS UserProfileImageUrl
 						FROM
 							Feeds f
 						LEFT JOIN
@@ -85,24 +88,67 @@ func (feedDb *PostgresFeedDBStore) FetchFeedWithPagination(limit, page int) (*[]
 	)
 	rows, err := feedDb.DB.Query(query)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		feed := entity.Feed{}
-		err := rows.Scan(&feed.Id, &feed.Caption, &feed.UserId, &feed.Likes, &feed.CreatedAt, &feed.UpdatedAt)
+		var feedId int
+		var caption string
+		var userId int
+		var likes int
+		var feedCreatedAt string
+		var feedUpdatedAt string
+		var imageUrl sql.NullString
+		var userName sql.NullString
+		var userEmail sql.NullString
+		var userProfileImageUrl sql.NullString
+		err := rows.Scan(&feedId, &caption, &userId, &likes, &feedCreatedAt, &feedUpdatedAt, &imageUrl, &userName, &userEmail, &userProfileImageUrl)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		feeds = append(feeds, feed)
+		if feed, ok := feedMap[feedId]; ok {
+			if imageUrl.Valid {
+				feed.Images = append(feed.Images, imageUrl.String)
+			}
+		} else {
+			feed := &entity.Feed{
+				Id:        feedId,
+				Caption:   caption,
+				UserId:    userId,
+				Likes:     likes,
+				CreatedAt: feedCreatedAt,
+				UpdatedAt: feedUpdatedAt,
+				Images:    []string{},
+			}
+
+			if imageUrl.Valid {
+				feed.Images = append(feed.Images, imageUrl.String)
+			}
+
+			feedUserData := &dto.FeedWithUserData{
+				Feed:         *feed,
+				UserName:     userName.String,
+				UserPhone:    "",
+				UserEmail:    userEmail.String,
+				UserImageUrl: userProfileImageUrl.String,
+			}
+
+			feedMap[feedId] = feedUserData
+
+		}
 	}
 
 	if err := rows.Err(); err != nil {
 		fmt.Printf("error on feed rows")
 	}
 
-	return &feeds, nil
+	for _, element := range feedMap {
+
+		feeds = append(feeds, *element)
+	}
+
+	return &feeds, &totalUniqueFeedId, nil
 
 }
