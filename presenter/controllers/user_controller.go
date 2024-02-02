@@ -21,7 +21,6 @@ import (
 
 type UserController struct {
 	userUsecases user_usecase.UserUseCases
-	// authMiddleware
 }
 
 func NewUserController(usersUsecase user_usecase.UserUseCases) *UserController {
@@ -132,7 +131,7 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 
 	defer file.Close()
 
-	ok, extension := isAllowedImageFile(handler.Filename)
+	ok, extension := utils.IsAllowedImageFile(handler.Filename)
 
 	extensionName := strings.TrimPrefix(extension, ".")
 
@@ -192,19 +191,6 @@ func (u *UserController) UpadateUserImage(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userRes)
 
-}
-
-func isAllowedImageFile(filename string) (bool, string) {
-	allowedExtensions := map[string]bool{
-		".png":  true,
-		".jpg":  true,
-		".jpeg": true,
-		".gif":  true,
-		".webp": true,
-	}
-
-	ext := filepath.Ext(filename)
-	return allowedExtensions[strings.ToLower(ext)], ext
 }
 
 func (u *UserController) SendAuthEmail(w http.ResponseWriter, r *http.Request) {

@@ -11,12 +11,12 @@ import (
 	"github.com/proGabby/4genz/domain/entity"
 )
 
-type PostgresDBStore struct {
+type PostgresUserDBStore struct {
 	DB *sql.DB
 }
 
-func NewPostgresDBStore(db *sql.DB) *PostgresDBStore {
-	return &PostgresDBStore{
+func NewPostgresUserDBStore(db *sql.DB) *PostgresUserDBStore {
+	return &PostgresUserDBStore{
 		DB: db,
 	}
 }
@@ -51,7 +51,7 @@ func InitDatabase() (*sql.DB, error) {
 
 }
 
-func (db *PostgresDBStore) RegisterUser(name, email, profileImageUrl string, hashedPassword []byte) (*entity.User, error) {
+func (db *PostgresUserDBStore) RegisterUser(name, email, profileImageUrl string, hashedPassword []byte) (*entity.User, error) {
 
 	var userID int
 	query := "INSERT INTO users(name, email, profile_image_url, password, is_verified, token_version,email_otp,forgot_password_otp,forget_password_otp_expiry_time) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
@@ -66,7 +66,7 @@ func (db *PostgresDBStore) RegisterUser(name, email, profileImageUrl string, has
 	return createdUser, nil
 }
 
-func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (*dto.UserResponse, error) {
+func (db *PostgresUserDBStore) UpdateUserImage(userId int, profileImageUrl string) (*dto.UserResponse, error) {
 
 	var userResDto dto.UserResponse
 	query := "UPDATE users SET profile_image_url = $2 WHERE id = $1 RETURNING id, name, email,profile_image_url, is_verified"
@@ -79,7 +79,7 @@ func (db *PostgresDBStore) UpdateUserImage(userId int, profileImageUrl string) (
 	return &userResDto, nil
 }
 
-func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, error) {
+func (db *PostgresUserDBStore) VerifyUserCredentials(email string) (*entity.User, error) {
 
 	var userRes entity.User
 	query := "SELECT id, name, password, email, profile_image_url, is_verified, token_version FROM users WHERE email = $1"
@@ -92,7 +92,7 @@ func (db *PostgresDBStore) VerifyUserCredentials(email string) (*entity.User, er
 	return &userRes, nil
 }
 
-func (db *PostgresDBStore) GetUserByID(userId int) (*entity.User, error) {
+func (db *PostgresUserDBStore) GetUserByID(userId int) (*entity.User, error) {
 	var user entity.User
 	query := "SELECT id, name, email, profile_image_url, is_verified, token_version FROM users WHERE id = $1"
 	err := db.DB.QueryRow(query, userId).Scan(&user.Id, &user.Name, &user.Email, &user.ProfileImageUrl, &user.IsVerified, &user.TokenVersion)
@@ -103,7 +103,7 @@ func (db *PostgresDBStore) GetUserByID(userId int) (*entity.User, error) {
 	return &user, nil
 }
 
-func (db *PostgresDBStore) UpdateUserEmailPasscode(userId int, emailOtp string) (*dto.UserResponse, error) {
+func (db *PostgresUserDBStore) UpdateUserEmailPasscode(userId int, emailOtp string) (*dto.UserResponse, error) {
 
 	var userResDto dto.UserResponse
 	query := "UPDATE users SET email_otp = $2 WHERE id = $1 RETURNING id, name, email"
@@ -116,7 +116,7 @@ func (db *PostgresDBStore) UpdateUserEmailPasscode(userId int, emailOtp string) 
 	return &userResDto, nil
 }
 
-func (db *PostgresDBStore) FetchPasscode(userId int) (*entity.User, error) {
+func (db *PostgresUserDBStore) FetchPasscode(userId int) (*entity.User, error) {
 
 	var user entity.User
 	query := "SELECT id, name, email, email_otp, is_verified, profile_image_url FROM users WHERE id = $1"
@@ -129,7 +129,7 @@ func (db *PostgresDBStore) FetchPasscode(userId int) (*entity.User, error) {
 	return &user, nil
 }
 
-func (db *PostgresDBStore) UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error) {
+func (db *PostgresUserDBStore) UpdateUserEmailVerificationStatus(userId int, isVerified bool) (*dto.UserResponse, error) {
 
 	var userResDto dto.UserResponse
 	query := "UPDATE users SET is_verified = $2 WHERE id = $1 RETURNING id, name, email, is_verified"
@@ -143,7 +143,7 @@ func (db *PostgresDBStore) UpdateUserEmailVerificationStatus(userId int, isVerif
 }
 
 // A method to update user token version by one
-func (db *PostgresDBStore) UpdateUserTokenVersion(userId int) (*entity.User, error) {
+func (db *PostgresUserDBStore) UpdateUserTokenVersion(userId int) (*entity.User, error) {
 
 	var user entity.User
 	query := "UPDATE users SET token_version = token_version + 1 WHERE id = $1 RETURNING id, name, email, profile_image_url, is_verified"
@@ -156,9 +156,8 @@ func (db *PostgresDBStore) UpdateUserTokenVersion(userId int) (*entity.User, err
 	return &user, nil
 }
 
-
 // A method to check if user already exists
-func (db *PostgresDBStore) CheckIfUserExists(email string) (bool, error) {
+func (db *PostgresUserDBStore) CheckIfUserExists(email string) (bool, error) {
 
 	var user entity.User
 	query := "SELECT id FROM users WHERE email = $1"
