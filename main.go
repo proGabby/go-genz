@@ -9,8 +9,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
+	socketio "github.com/googollee/go-socket.io"
 	postgressDatasource "github.com/proGabby/4genz/data/datasource"
-	userRoutes "github.com/proGabby/4genz/presenter/routes"
+	routes "github.com/proGabby/4genz/presenter/routes"
 )
 
 func main() {
@@ -39,6 +40,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userRoutes.SetUpUserRoutes(r, db)
+	server := socketio.NewServer(nil)
+	routes.SetUpUserRoutes(r, db, server)
+	routes.SocketRoutes(r, server)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

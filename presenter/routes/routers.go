@@ -1,9 +1,10 @@
-package userRoutes
+package routes
 
 import (
 	"database/sql"
 	"fmt"
 
+	socketio "github.com/googollee/go-socket.io"
 	"github.com/gorilla/mux"
 
 	infrastruture "github.com/proGabby/4genz/data/cloud_infrastruture"
@@ -17,7 +18,7 @@ import (
 	"github.com/proGabby/4genz/presenter/middlewares"
 )
 
-func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
+func SetUpUserRoutes(r *mux.Router, db *sql.DB, socketServ *socketio.Server) {
 
 	psql := postgressDatasource.NewPostgresUserDBStore(db)
 	fPsql := postgressDatasource.NewPostgresFeedDBStore(db)
@@ -33,7 +34,7 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB) {
 	}
 
 	userRepoImpl := user_repo_impl.NewUserRepoImpl(*psql)
-	feedRepoImpl := feed_repo_impl.NewFeedRepoImpl(*fPsql)
+	feedRepoImpl := feed_repo_impl.NewFeedRepoImpl(*fPsql, socketServ)
 	// cloudStrImpl := cloud_repo_impl.NewCloudReposityImpl(*azCloud)
 	cloudStrImpl := cloud_repo_impl.NewAWSCloudReposityImpl(*awsStorage)
 	emailSendImpl, err := infrastruture.NewGomailSender("smtp.gmail.com")
