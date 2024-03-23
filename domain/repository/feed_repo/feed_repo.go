@@ -9,4 +9,5 @@ type FeedRepository interface {
 	CreateNewFeed(userId int, caption string) (*entity.Feed, error)
 	AddFeedImage(feed *entity.Feed, image string) (*entity.Feed, error)
 	FetchPaginatedFeeds(limit, page int) (*[]dto.FeedWithUserData, *int, error)
+	SendFeedToSocket(namespace string, event string, args ...interface{})
 }

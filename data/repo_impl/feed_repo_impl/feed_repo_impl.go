@@ -1,18 +1,21 @@
 package feed_repo_impl
 
 import (
+	socketio "github.com/googollee/go-socket.io"
 	postgressDatasource "github.com/proGabby/4genz/data/datasource"
 	"github.com/proGabby/4genz/data/dto"
 	"github.com/proGabby/4genz/domain/entity"
 )
 
 type FeedRepositoryImpl struct {
-	psql postgressDatasource.PostgresFeedDBStore
+	psql       postgressDatasource.PostgresFeedDBStore
+	socketServ *socketio.Server
 }
 
-func NewFeedRepoImpl(psql postgressDatasource.PostgresFeedDBStore) *FeedRepositoryImpl {
+func NewFeedRepoImpl(psql postgressDatasource.PostgresFeedDBStore, socketServ *socketio.Server) *FeedRepositoryImpl {
 	return &FeedRepositoryImpl{
-		psql: psql,
+		psql:       psql,
+		socketServ: socketServ,
 	}
 }
 
@@ -26,4 +29,8 @@ func (feedRepoImpl *FeedRepositoryImpl) AddFeedImage(feed *entity.Feed, imageUrl
 
 func (feedRepoImpl *FeedRepositoryImpl) FetchPaginatedFeeds(limit, page int) (*[]dto.FeedWithUserData, *int, error) {
 	return feedRepoImpl.psql.FetchFeedWithPagination(limit, page)
+}
+
+func (feedRepoImpl *FeedRepositoryImpl) SendFeedToSocket(namespace string, event string, args ...interface{}) {
+	feedRepoImpl.socketServ.BroadcastToNamespace(namespace, event, args...)
 }

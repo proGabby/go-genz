@@ -1,6 +1,7 @@
 package feeds_usecase
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -82,6 +83,13 @@ func (cf *CreateFeedUsecase) Execute(userId int, caption string, files []*multip
 			fmt.Printf("error adding image to feed: %v\n", err)
 		}
 	}
+
+	jsonBytes, err := json.Marshal(*feed)
+	if err == nil {
+       jsonString := string(jsonBytes)
+	   cf.feedRepo.SendFeedToSocket("/", "NewFeed", jsonString)
+    }
+
 
 	return feed, nil
 }
