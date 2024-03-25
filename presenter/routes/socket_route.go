@@ -12,12 +12,13 @@ func SocketRoutes(r *mux.Router, serv *socketio.Server) {
 
 	serv.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
-		// serv.JoinRoom("/", "GeneralRoom", s)
+		serv.JoinRoom("/", "GeneralRoom", s)
+		fmt.Println("connected:", s.ID())
 		return nil
 	})
 
 	serv.OnEvent("/", "NewFeed", func(s socketio.Conn, msg string) {
-
+		fmt.Println("NewFeed event is hit")
 		serv.BroadcastToNamespace("/", "NewFeed")
 	})
 

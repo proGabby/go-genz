@@ -14,11 +14,13 @@ import (
 
 type FeedsController struct {
 	feedUsecases feeds_usecase.FeedUsecases
+	feedChan     *chan *entity.Feed
 }
 
-func NewFeedsController(feedUsecases feeds_usecase.FeedUsecases) *FeedsController {
+func NewFeedsController(feedUsecases feeds_usecase.FeedUsecases, feedChan *chan *entity.Feed) *FeedsController {
 	return &FeedsController{
 		feedUsecases: feedUsecases,
+		feedChan:     feedChan,
 	}
 }
 
@@ -82,6 +84,11 @@ func (f *FeedsController) CreateFeed(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(map[string]interface{}{
 			"error": fmt.Sprintf("feed creation failed"),
 		}, http.StatusBadRequest, w)
+	}
+
+	if f.feedChan != nil {
+
+		*f.feedChan <- feed
 	}
 
 	w.WriteHeader(http.StatusOK)

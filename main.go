@@ -11,6 +11,7 @@ import (
 
 	socketio "github.com/googollee/go-socket.io"
 	postgressDatasource "github.com/proGabby/4genz/data/datasource"
+	"github.com/proGabby/4genz/domain/entity"
 	routes "github.com/proGabby/4genz/presenter/routes"
 )
 
@@ -41,7 +42,10 @@ func main() {
 	}
 
 	server := socketio.NewServer(nil)
-	routes.SetUpUserRoutes(r, db, server)
-	routes.SocketRoutes(r, server)
+	var feedChannel = make(chan *entity.Feed)
+	routes.SetUpUserRoutes(r, db, server, &feedChannel)
+	// routes.SocketRoutes(r, server)
+	routes.WebSocketRoutes(r, &feedChannel)
+
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

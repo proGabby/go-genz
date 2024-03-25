@@ -12,13 +12,14 @@ import (
 	cloud_repo_impl "github.com/proGabby/4genz/data/repo_impl/cloub_repo_impl"
 	"github.com/proGabby/4genz/data/repo_impl/feed_repo_impl"
 	"github.com/proGabby/4genz/data/repo_impl/user_repo_impl.go"
+	"github.com/proGabby/4genz/domain/entity"
 	"github.com/proGabby/4genz/domain/usecase/feeds_usecase"
 	"github.com/proGabby/4genz/domain/usecase/user_usecase"
 	"github.com/proGabby/4genz/presenter/controllers"
 	"github.com/proGabby/4genz/presenter/middlewares"
 )
 
-func SetUpUserRoutes(r *mux.Router, db *sql.DB, socketServ *socketio.Server) {
+func SetUpUserRoutes(r *mux.Router, db *sql.DB, socketServ *socketio.Server, feedChan *chan *entity.Feed) {
 
 	psql := postgressDatasource.NewPostgresUserDBStore(db)
 	fPsql := postgressDatasource.NewPostgresFeedDBStore(db)
@@ -60,7 +61,7 @@ func SetUpUserRoutes(r *mux.Router, db *sql.DB, socketServ *socketio.Server) {
 
 	//controllers objects
 	userController := controllers.NewUserController(*userUsecases)
-	feedController := controllers.NewFeedsController(*feedsUsecases)
+	feedController := controllers.NewFeedsController(*feedsUsecases, feedChan)
 
 	authorizer := middlewares.NewAuthMiddleware(*userRepoImpl)
 
