@@ -1,8 +1,13 @@
 package routes
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+
+	postgressDatasource "github.com/proGabby/4genz/data/datasource"
+	"github.com/proGabby/4genz/data/repo_impl/user_repo_impl.go"
+	"github.com/proGabby/4genz/presenter/middlewares"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -14,7 +19,10 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func WebSocketRoutes(r *mux.Router, feedChan *chan *entity.Feed) {
+func WebSocketRoutes(r *mux.Router, feedChan *chan *entity.Feed, db *sql.DB) {
+	psql := postgressDatasource.NewPostgresUserDBStore(db)
+	userRepoImpl := user_repo_impl.NewUserRepoImpl(*psql)
+	authorizer := middlewares.NewAuthMiddleware(*userRepoImpl)
 
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -58,5 +66,9 @@ func WebSocketRoutes(r *mux.Router, feedChan *chan *entity.Feed) {
 			}
 		}
 	})
+
+	r.HandleFunc("/ws/chat", authorizer.Authenticate(
+		func(w http.ResponseWriter, r *http.Request) {
+		}))
 
 }
